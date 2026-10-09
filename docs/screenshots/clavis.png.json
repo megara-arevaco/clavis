@@ -1,0 +1,10 @@
+{
+  "kind": "application-screenshot",
+  "application": "Clavis",
+  "sourceVersion": "0.4.2",
+  "source": ["src/ui.rs", "src/style.css", "shortcuts.json"],
+  "generator": "clavis --tool Ghostty --capture",
+  "scope": "GTK panel only; bundled reference content; no desktop or personal keyboard data",
+  "dimensions": {"width": 560, "height": 440},
+  "review": "Opened and inspected; all fifteen Ghostty reference entries visible"
+}

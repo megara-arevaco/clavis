@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Clavis</title>
+  <desc id="desc">A mint C surrounding a terminal prompt on a dark green keycap.</desc>
+  <rect x="2" y="2" width="60" height="60" rx="17" fill="#17201e"/>
+  <rect x="2.5" y="2.5" width="59" height="59" rx="16.5" fill="none" stroke="#34574b"/>
+  <path d="M43 18H28c-8 0-13 5-13 13v2c0 8 5 13 13 13h15" fill="none" stroke="#a8f5df" stroke-width="6" stroke-linecap="round"/>
+  <path d="m31 25 8 7-8 7" fill="none" stroke="#ecfffa" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

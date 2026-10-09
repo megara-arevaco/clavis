@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Clavis
+Comment=Compact shortcuts and commands for Ghostty and terminal tools
+Exec=clavis --show
+Icon=clavis
+Terminal=false
+Categories=Utility;
+StartupNotify=false
+StartupWMClass=dev.baul.Clavis

@@ -1,0 +1,146 @@
+[
+  {
+    "name": "Git", "kind": "Commands", "source": "https://git-scm.com/docs", "note": "Replace placeholders before running commands.",
+    "entries": [
+      {"key": "git status -sb", "action": "Branch and working tree"},
+      {"key": "git diff", "action": "Unstaged changes"},
+      {"key": "git diff --staged", "action": "Staged changes"},
+      {"key": "git log --oneline -10", "action": "Recent commits"},
+      {"key": "git switch <branch>", "action": "Switch branch"},
+      {"key": "git switch -c <branch>", "action": "Create branch"},
+      {"key": "git add <file>", "action": "Stage a file"},
+      {"key": "git commit -m '<message>'", "action": "Commit staged files"},
+      {"key": "git fetch", "action": "Fetch remote updates"},
+      {"key": "git stash push", "action": "Stash tracked changes"}
+    ]
+  },
+  {
+    "name": "SSH", "kind": "Commands", "source": "https://man.openbsd.org/ssh", "note": "~ escapes work at the start of a line in an interactive SSH session.",
+    "entries": [
+      {"key": "ssh <user>@<host>", "action": "Connect to a host"},
+      {"key": "ssh -p <port> <host>", "action": "Use another port"},
+      {"key": "ssh -i <key> <host>", "action": "Choose an identity file"},
+      {"key": "ssh -v <host>", "action": "Debug connection"},
+      {"key": "ssh -G <host>", "action": "Show resolved configuration"},
+      {"key": "ssh -L 8080:localhost:80 <host>", "action": "Forward local port 8080"},
+      {"key": "ssh -N -D 1080 <host>", "action": "Create a SOCKS proxy"},
+      {"key": "Enter, then ~.", "action": "Disconnect a stuck session"},
+      {"key": "Enter, then ~?", "action": "Show escape help"}
+    ]
+  },
+  {
+    "name": "curl", "kind": "Commands", "source": "https://curl.se/docs/manpage.html", "note": "Use real URLs. Uploads and POST requests can change server state.",
+    "entries": [
+      {"key": "curl <url>", "action": "Fetch a URL"},
+      {"key": "curl -I <url>", "action": "Request headers only"},
+      {"key": "curl -L <url>", "action": "Follow redirects"},
+      {"key": "curl -o <file> <url>", "action": "Save to a named file"},
+      {"key": "curl -fS <url>", "action": "Fail on HTTP errors"},
+      {"key": "curl -v <url>", "action": "Inspect request and response"},
+      {"key": "curl -H 'Accept: application/json' <url>", "action": "Set a request header"},
+      {"key": "curl --json @data.json <url>", "action": "POST a JSON file · curl 7.82+"},
+      {"key": "curl --max-time 10 <url>", "action": "Limit total request time"}
+    ]
+  },
+  {
+    "name": "tmux", "kind": "Keys", "source": "https://github.com/tmux/tmux/wiki", "note": "Default prefix: press Ctrl+B, release, then the next key.",
+    "entries": [
+      {"key": "Ctrl+B → c", "action": "New window"},
+      {"key": "Ctrl+B → n / p", "action": "Next / previous window"},
+      {"key": "Ctrl+B → %", "action": "Split left / right"},
+      {"key": "Ctrl+B → \"", "action": "Split top / bottom"},
+      {"key": "Ctrl+B → arrows", "action": "Move between panes"},
+      {"key": "Ctrl+B → z", "action": "Zoom current pane"},
+      {"key": "Ctrl+B → d", "action": "Detach session"},
+      {"key": "Ctrl+B → [", "action": "Enter copy mode"},
+      {"key": "Ctrl+B → ?", "action": "Show key bindings"},
+      {"key": "tmux attach", "action": "Attach to an existing session"}
+    ]
+  },
+  {
+    "name": "Vim", "kind": "Keys", "source": "https://vimhelp.org/quickref.txt.html", "note": "Normal-mode keys unless noted. Esc returns to Normal mode. Also applies to basic Neovim editing.",
+    "entries": [
+      {"key": "i / a", "action": "Insert before / after cursor"},
+      {"key": "Esc", "action": "Return to Normal mode"},
+      {"key": "w / b", "action": "Next / previous word"},
+      {"key": "gg / G", "action": "First / last line"},
+      {"key": "/<pattern>", "action": "Search forward"},
+      {"key": "n / N", "action": "Next / previous match"},
+      {"key": "yy / p", "action": "Yank line / paste after"},
+      {"key": "dd", "action": "Delete current line"},
+      {"key": "u / Ctrl+R", "action": "Undo / redo"},
+      {"key": ":w / :q / :wq", "action": "Save / quit / save and quit"}
+    ]
+  },
+  {
+    "name": "fzf", "kind": "Keys", "source": "https://github.com/junegunn/fzf#usage", "note": "Ctrl+R, Ctrl+T and Alt+C require fzf shell integration.",
+    "entries": [
+      {"key": "Ctrl+R", "action": "Search shell history · integration"},
+      {"key": "Ctrl+T", "action": "Insert a file path · integration"},
+      {"key": "Alt+C", "action": "Change directory · integration"},
+      {"key": "Ctrl+J / Ctrl+K", "action": "Move selection down / up"},
+      {"key": "Enter", "action": "Accept selection"},
+      {"key": "Esc / Ctrl+C", "action": "Cancel"},
+      {"key": "Tab / Shift+Tab", "action": "Toggle selection · multi mode"},
+      {"key": "fzf --multi", "action": "Enable multiple selection"},
+      {"key": "fzf --preview 'head -80 {}'", "action": "Preview file contents"}
+    ]
+  },
+  {
+    "name": "ripgrep", "kind": "Commands", "source": "https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md", "note": "Hidden and ignored files are skipped by default.",
+    "entries": [
+      {"key": "rg '<pattern>'", "action": "Search recursively"},
+      {"key": "rg -i '<pattern>'", "action": "Ignore case"},
+      {"key": "rg -n '<pattern>'", "action": "Show line numbers"},
+      {"key": "rg -l '<pattern>'", "action": "Show matching filenames"},
+      {"key": "rg -F '<text>'", "action": "Match literal text"},
+      {"key": "rg -g '*.rs' '<pattern>'", "action": "Filter files by glob"},
+      {"key": "rg --hidden '<pattern>'", "action": "Include hidden files"},
+      {"key": "rg --files", "action": "List searchable files"},
+      {"key": "rg -C 3 '<pattern>'", "action": "Show surrounding lines"}
+    ]
+  },
+  {
+    "name": "fd", "kind": "Commands", "source": "https://github.com/sharkdp/fd#usage", "note": "On Ubuntu/Debian the executable may be named fdfind.",
+    "entries": [
+      {"key": "fd '<pattern>'", "action": "Find matching paths"},
+      {"key": "fd -t f", "action": "Files only"},
+      {"key": "fd -t d", "action": "Directories only"},
+      {"key": "fd -e rs", "action": "Filter by extension"},
+      {"key": "fd -H '<pattern>'", "action": "Include hidden paths"},
+      {"key": "fd -I '<pattern>'", "action": "Include ignored paths"},
+      {"key": "fd -g '*.json'", "action": "Match a glob"},
+      {"key": "fd -a '<pattern>'", "action": "Print absolute paths"},
+      {"key": "fd -d 2 '<pattern>'", "action": "Limit directory depth"}
+    ]
+  },
+  {
+    "name": "jq", "kind": "Commands", "source": "https://jqlang.org/manual/", "note": "Single-quote filters in POSIX shells. JSON input is read from the file or stdin.",
+    "entries": [
+      {"key": "jq '.' data.json", "action": "Pretty-print JSON"},
+      {"key": "jq '.name' data.json", "action": "Read a field"},
+      {"key": "jq -r '.name' data.json", "action": "Print a string without quotes"},
+      {"key": "jq '.items[]' data.json", "action": "Iterate array items"},
+      {"key": "jq 'keys' data.json", "action": "List object keys"},
+      {"key": "jq 'length' data.json", "action": "Count items"},
+      {"key": "jq 'map(.name)' data.json", "action": "Extract names from an array"},
+      {"key": "jq 'select(.active)' data.json", "action": "Keep matching input objects"},
+      {"key": "jq -c '.' data.json", "action": "Compact JSON output"}
+    ]
+  },
+  {
+    "name": "htop", "kind": "Keys", "source": "https://github.com/htop-dev/htop", "note": "Default bindings. Function keys can be intercepted by your terminal.",
+    "entries": [
+      {"key": "F1 / ?", "action": "Help"},
+      {"key": "F2", "action": "Setup"},
+      {"key": "F3 / /", "action": "Search processes"},
+      {"key": "F4", "action": "Filter processes"},
+      {"key": "F5 / t", "action": "Toggle tree view"},
+      {"key": "F6", "action": "Choose sort column"},
+      {"key": "M / P", "action": "Sort by memory / CPU"},
+      {"key": "u", "action": "Filter by user"},
+      {"key": "F9 / k", "action": "Choose a signal · can terminate processes"},
+      {"key": "F10 / q", "action": "Quit"}
+    ]
+  }
+]

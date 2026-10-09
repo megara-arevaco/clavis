@@ -1,0 +1,12 @@
+{
+  "Git": "https://git-scm.com/docs/git",
+  "OpenSSH": "https://man.openbsd.org/ssh",
+  "curl": "https://curl.se/docs/manpage.html",
+  "tmux": "https://raw.githubusercontent.com/tmux/tmux/master/tmux.1",
+  "Vim": "https://raw.githubusercontent.com/vim/vim/master/runtime/doc/quickref.txt",
+  "fzf": "https://raw.githubusercontent.com/junegunn/fzf/master/README.md",
+  "ripgrep": "https://raw.githubusercontent.com/BurntSushi/ripgrep/master/GUIDE.md",
+  "fd": "https://raw.githubusercontent.com/sharkdp/fd/master/README.md",
+  "jq": "https://jqlang.org/manual/",
+  "htop": "https://raw.githubusercontent.com/htop-dev/htop/master/htop.1.in"
+}

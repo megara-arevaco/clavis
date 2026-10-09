@@ -1,0 +1,7 @@
+{
+  "source": "packaging/clavis.svg",
+  "sourceSha256": "ce40e4a0e555ef6037d5ff8c2eedd408d2ec4bd30872d597e9c0aa1549a541fe",
+  "generator": "scripts/render-icon.sh",
+  "method": "Authored SVG rendered with librsvg; ARGB derived with ffmpeg",
+  "purpose": "Clavis application and StatusNotifier icon"
+}

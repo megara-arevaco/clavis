@@ -1,0 +1,17 @@
+[
+  {"key": "Ctrl+Shift+C", "action": "Copy selection"},
+  {"key": "Ctrl+Shift+V", "action": "Paste clipboard"},
+  {"key": "Ctrl+Shift+T", "action": "New tab"},
+  {"key": "Ctrl+Shift+W", "action": "Close tab"},
+  {"key": "Ctrl+Tab", "action": "Next tab"},
+  {"key": "Ctrl+Shift+Tab", "action": "Previous tab"},
+  {"key": "Ctrl+Shift+O", "action": "Split left / right"},
+  {"key": "Ctrl+Shift+E", "action": "Split top / bottom"},
+  {"key": "Ctrl+Shift+Enter", "action": "Zoom current split"},
+  {"key": "Ctrl+Enter", "action": "Toggle fullscreen"},
+  {"key": "Ctrl+Shift+P", "action": "Command palette"},
+  {"key": "Ctrl+,", "action": "Open configuration"},
+  {"key": "Ctrl+Shift+,", "action": "Reload configuration"},
+  {"key": "Ctrl++ / Ctrl+-", "action": "Increase / decrease font"},
+  {"key": "Ctrl+0", "action": "Reset font size"}
+]

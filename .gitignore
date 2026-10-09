@@ -1,0 +1,15 @@
+/target/
+/build/
+/*.egg-info/
+__pycache__/
+.venv/
+/dist/
+/research/*.txt
+/.impeccable/
+/PRODUCT.md
+/DESIGN.md
+/VALIDATION.md
+.env
+.env.*
+!.env.example
+*.log

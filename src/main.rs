@@ -4,6 +4,7 @@ use std::{cell::Cell, collections::HashMap, env, fs, path::PathBuf, rc::Rc, sync
 
 mod input;
 mod catalog;
+mod locale;
 mod ui;
 mod tray;
 
@@ -138,7 +139,7 @@ fn main() -> glib::ExitCode {
         let hold = app.hold();
         app.connect_shutdown(move |_| { let _ = &hold; });
         let tools = Rc::new(catalog::tools());
-        let ui::Ui { window, selector, status } = ui::build(app, tools.clone());
+        let ui::Ui { window, selector, status, language } = ui::build(app, tools.clone());
         if let Some(name) = &tool_name {
             if let Some(index) = tools.iter().position(|tool| tool.name.eq_ignore_ascii_case(name)) { selector.set_selected(index as u32); }
             else { eprintln!("Unknown tool: {name}"); }
@@ -178,7 +179,7 @@ fn main() -> glib::ExitCode {
                     OverlayEvent::Quit => { app_clone.quit(); return glib::ControlFlow::Break; }
                     OverlayEvent::InputNotice(message) => { eprintln!("{message}"); status.set_tooltip_text(Some(&message)); }
                     OverlayEvent::Error(error) => {
-                        eprintln!("{error}"); status.set_text("Keyboard unavailable · open from tray");
+                        eprintln!("{error}"); status.set_text(language.get().text("keyboardUnavailable"));
                         status.set_tooltip_text(Some(&error)); retained_window.present();
                     }
                 }

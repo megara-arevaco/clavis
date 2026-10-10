@@ -1,16 +1,27 @@
 window.overlay { background: #17201e; color: #ecfffa; border-radius: 10px; font-size: 12px; }
-dropdown > button { font-size: 14px; font-weight: 600; }
-button, entry { min-height: 24px; }
+dropdown > button { font-size: 13px; font-weight: 600; }
+button, entry { min-height: 26px; }
 searchentry { background: #202d29; color: #ecfffa; font-size: 12px; }
 searchentry text { caret-color: #a8f5df; }
-.reference-row { background: transparent; border: none; box-shadow: none; border-radius: 4px; padding: 3px 6px; min-height: 22px; }
+.reference-row { background: transparent; border: none; box-shadow: none; border-radius: 4px; padding: 4px 6px; min-height: 28px; }
 .reference-row:hover { background: #263e36; }
 .reference-row:active { background: #365749; }
 .key { font-family: monospace; font-size: 12px; color: #a8f5df; }
 .muted { color: #b3ccc5; font-size: 11px; }
+.source-label { color: #a8f5df; font-size: 10px; font-weight: 600; }
+.warning { color: #e8c17a; font-size: 10px; }
+.dialog-title { color: #ecfffa; font-size: 14px; font-weight: 600; }
+.help-copy { color: #ecfffa; font-size: 12px; }
 button { color: #ecfffa; }
-button:focus-visible, searchentry:focus-within { outline: 2px solid #a8f5df; outline-offset: -2px; }
+button:focus-visible, searchentry:focus-within, dropdown:focus-visible { outline: 2px solid #a8f5df; outline-offset: -2px; }
 button.flat { padding: 3px 6px; }
 button.link { color: #a8f5df; font-size: 11px; }
+.favorite-toggle { padding: 2px; min-width: 28px; min-height: 28px; color: #a8f5df; }
+.favorite-toggle:checked { background: #263e36; }
 scrollbar slider { background: #617c72; min-width: 4px; border-radius: 3px; }
 selection { background: #365749; color: #ecfffa; }
+window.overlay.large-text { font-size: 14px; }
+.large-text dropdown > button, .large-text searchentry { font-size: 14px; }
+.large-text .key, .large-text .help-copy { font-size: 14px; }
+.large-text .muted { font-size: 13px; }
+.large-text .source-label, .large-text .warning { font-size: 12px; }

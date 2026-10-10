@@ -65,6 +65,56 @@ pub fn configured() -> Result<Vec<Keyboard>, String> {
     Ok(keyboards)
 }
 
+/// Isolated GTK tests and captures show synthetic status without reading any device data.
+pub fn isolated_diagnostic(language: crate::locale::Language) -> String {
+    language.text("isolatedDiagnostic").to_string()
+}
+
+/// Production diagnostics read Clavis' selection and sysfs name/capability metadata only;
+/// they do not open /dev/input, inspect ACLs, or read keyboard events.
+pub fn diagnostic_summary(language: crate::locale::Language) -> String {
+    let setup = language.text("compositorGuide");
+    let title = language.text("diagnosticTitle");
+    match configured() {
+        Ok(keyboards) => {
+            let live = candidates();
+            let devices = keyboards.iter().map(|keyboard| diagnostic_device(keyboard, &live, language)).collect::<Vec<_>>().join("\n");
+            format!(
+                "{title}:\n{devices}\n{} {}\n{}\n\n{setup}",
+                language.text("devicePermissions"), language.text("checkInputHelp"),
+                language.text("readOnlyDiag")
+            )
+        }
+        Err(_) => format!("{title}:\n{}\n{}\n\n{setup}", language.text("doubleCtrlNotConfigured"), language.text("checkInputHelp")),
+    }
+}
+
+fn diagnostic_device(configured: &Keyboard, live: &[Keyboard], language: crate::locale::Language) -> String {
+    diagnostic_device_state(configured, sysfs_name(&configured.path).as_deref(), live, language)
+}
+
+fn diagnostic_device_state(configured: &Keyboard, current: Option<&str>, live: &[Keyboard], language: crate::locale::Language) -> String {
+    let expected = configured.name.as_deref();
+    let line = if let Some(expected_name) = expected {
+        if current == Some(expected_name) {
+            format!("{expected_name} — {} ({})", configured.path.display(), language.text("sysfsVisible"))
+        } else if let Some(reconnected) = matching_named_device(expected_name, live) {
+            format!("{expected_name} — {}: {}; {} {} {}", configured.path.display(), language.text("staleDevice"), language.text("candidateLabel"), reconnected.path.display(), language.text("candidateVisible"))
+        } else {
+            format!("{expected_name} — {} {}", configured.path.display(), language.text("notVisible"))
+        }
+    } else if let Some(name) = current {
+        format!("{name} — {} ({})", configured.path.display(), language.text("sysfsVisible"))
+    } else {
+        format!("{} {}", configured.path.display(), language.text("notVisible"))
+    };
+    line
+}
+
+fn matching_named_device<'a>(name: &str, devices: &'a [Keyboard]) -> Option<&'a Keyboard> {
+    devices.iter().find(|device| device.name.as_deref() == Some(name))
+}
+
 fn sysfs_name(path: &Path) -> Option<String> {
     let real = fs::canonicalize(path).ok()?;
     let event = real.file_name()?;
@@ -75,8 +125,8 @@ fn resolve(keyboard: &Keyboard) -> Result<PathBuf, String> {
     if let Some(name) = &keyboard.name {
         if sysfs_name(&keyboard.path).as_ref() == Some(name) { return Ok(keyboard.path.clone()); }
         // Bluetooth devices may get a different event number when they reconnect.
-        if let Some(found) = candidates().into_iter().find(|candidate| candidate.name.as_ref() == Some(name)) {
-            return Ok(found.path);
+        if let Some(found) = matching_named_device(name, &candidates()) {
+            return Ok(found.path.clone());
         }
         Err(format!("Keyboard disconnected: {name}"))
     } else { Ok(keyboard.path.clone()) }
@@ -241,5 +291,19 @@ mod tests {
         assert_eq!(specs.len(), 2); assert_eq!(specs[1].name.as_deref(), Some("USB Keyboard"));
         assert_eq!(parse_config("/dev/input/event3\n").len(), 1);
         assert!(parse_config("# no devices\n").is_empty());
+    }
+
+    #[test]
+    fn synthetic_reconnection_finds_renumbered_named_device_without_opening_it() {
+        let configured = Keyboard { path: PathBuf::from("/dev/input/event3"), name: Some("USB Keyboard".into()) };
+        let candidates = [
+            Keyboard { path: PathBuf::from("/dev/input/event18"), name: Some("USB Keyboard".into()) },
+            Keyboard { path: PathBuf::from("/dev/input/event19"), name: Some("Mouse".into()) },
+        ];
+        assert_eq!(matching_named_device("USB Keyboard", &candidates).unwrap().path, PathBuf::from("/dev/input/event18"));
+        assert!(diagnostic_device_state(&configured, None, &candidates, crate::locale::Language::English).contains("candidate /dev/input/event18"));
+        assert!(diagnostic_device_state(&configured, Some("USB Keyboard"), &candidates, crate::locale::Language::English).contains("permission not checked"));
+        assert!(diagnostic_device_state(&configured, None, &candidates, crate::locale::Language::Spanish).contains("candidato /dev/input/event18"));
+        assert!(matching_named_device("Absent", &candidates).is_none());
     }
 }

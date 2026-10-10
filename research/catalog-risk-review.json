@@ -1,0 +1,185 @@
+{
+    "schema_version": 1,
+    "review_date": "Not recorded",
+    "classification_policy": "Each bundled row is classified exactly once: “warning” is an exact-key inline caution; “no_warning” means no separate caution was judged warranted. Placeholder highlighting is generic and is not counted as a curated warning.",
+    "snapshots": {
+        "catalog.json": "c664484e37598ed4",
+        "shortcuts.json": "9ad90568bd0a2431"
+    },
+    "tools": {
+        "Git": {
+            "no_warning": [
+                "git status -sb",
+                "git diff",
+                "git diff --staged",
+                "git log --oneline -10"
+            ],
+            "warnings": {
+                "git switch <branch>": "Changes the checked-out branch; confirm uncommitted work is safe to carry over.",
+                "git switch -c <branch>": "Creates and checks out a branch; confirm the starting point.",
+                "git add <file>": "Stages the selected file for a later commit; review the staged diff.",
+                "git commit -m '<message>'": "Creates a commit from the staged changes; review them first.",
+                "git fetch": "Contacts the remote and updates remote-tracking refs; it does not update the working tree.",
+                "git stash push": "Moves tracked working changes into a stash; verify what will be saved."
+            }
+        },
+        "SSH": {
+            "no_warning": [
+                "Enter, then ~.",
+                "Enter, then ~?"
+            ],
+            "warnings": {
+                "ssh <user>@<host>": "Connects to a remote host; verify its host key before trusting the session.",
+                "ssh -p <port> <host>": "Connects to a remote host on a non-default port; verify its host key before trusting the session.",
+                "ssh -i <key> <host>": "Uses the selected identity file; keep private-key material confidential.",
+                "ssh -v <host>": "Verbose diagnostics can reveal hostnames and connection details; review before sharing.",
+                "ssh -G <host>": "Prints resolved SSH configuration, which may reveal internal hostnames, users or identity paths.",
+                "ssh -L 8080:localhost:80 <host>": "Forwards a local port to a remote service; confirm the destination and who can reach the local port.",
+                "ssh -N -D 1080 <host>": "Creates a SOCKS proxy that can route application traffic through the remote host."
+            }
+        },
+        "curl": {
+            "no_warning": [
+                "curl <url>",
+                "curl -I <url>",
+                "curl -L <url>",
+                "curl -fS <url>",
+                "curl -H 'Accept: application/json' <url>",
+                "curl --max-time 10 <url>"
+            ],
+            "warnings": {
+                "curl -o <file> <url>": "Writes to the named local file and may replace its contents.",
+                "curl -v <url>": "Verbose output may reveal request headers or credentials; review before sharing.",
+                "curl --json @data.json <url>": "Sends a POST request; the remote service may create or change data."
+            }
+        },
+        "tmux": {
+            "no_warning": [
+                "Ctrl+B → c",
+                "Ctrl+B → n / p",
+                "Ctrl+B → %",
+                "Ctrl+B → \"",
+                "Ctrl+B → arrows",
+                "Ctrl+B → z",
+                "Ctrl+B → d",
+                "Ctrl+B → [",
+                "Ctrl+B → ?"
+            ],
+            "warnings": {
+                "tmux attach": "Attaches to an existing session; its contents may be visible and input affects that session."
+            }
+        },
+        "Vim": {
+            "no_warning": [
+                "i / a",
+                "Esc",
+                "w / b",
+                "gg / G",
+                "/<pattern>",
+                "n / N",
+                "yy / p",
+                "u / Ctrl+R"
+            ],
+            "warnings": {
+                "dd": "Deletes the current line from the buffer; use Vim undo if needed.",
+                ":w / :q / :wq": "The write forms save the buffer to disk and may replace file contents."
+            }
+        },
+        "fzf": {
+            "no_warning": [
+                "Ctrl+T",
+                "Alt+C",
+                "Ctrl+J / Ctrl+K",
+                "Enter",
+                "Esc / Ctrl+C",
+                "Tab / Shift+Tab",
+                "fzf --multi"
+            ],
+            "warnings": {
+                "Ctrl+R": "Searches shell history through fzf integration; treat displayed history as private.",
+                "fzf --preview 'head -80 {}'": "Runs a preview command and displays file contents; avoid exposing private files."
+            }
+        },
+        "ripgrep": {
+            "no_warning": [
+                "rg '<pattern>'",
+                "rg -i '<pattern>'",
+                "rg -n '<pattern>'",
+                "rg -l '<pattern>'",
+                "rg -F '<text>'",
+                "rg -g '*.rs' '<pattern>'",
+                "rg --files",
+                "rg -C 3 '<pattern>'"
+            ],
+            "warnings": {
+                "rg --hidden '<pattern>'": "Includes hidden files that may contain private configuration or credentials."
+            }
+        },
+        "fd": {
+            "no_warning": [
+                "fd '<pattern>'",
+                "fd -t f",
+                "fd -t d",
+                "fd -e rs",
+                "fd -g '*.json'",
+                "fd -a '<pattern>'",
+                "fd -d 2 '<pattern>'"
+            ],
+            "warnings": {
+                "fd -H '<pattern>'": "Includes hidden paths that may contain private configuration or credentials.",
+                "fd -I '<pattern>'": "Includes ignored paths that may contain generated or private files."
+            }
+        },
+        "jq": {
+            "no_warning": [
+                "jq '.' data.json",
+                "jq '.name' data.json",
+                "jq -r '.name' data.json",
+                "jq '.items[]' data.json",
+                "jq 'keys' data.json",
+                "jq 'length' data.json",
+                "jq 'map(.name)' data.json",
+                "jq 'select(.active)' data.json",
+                "jq -c '.' data.json"
+            ],
+            "warnings": {}
+        },
+        "htop": {
+            "no_warning": [
+                "F1 / ?",
+                "F2",
+                "F3 / /",
+                "F4",
+                "F5 / t",
+                "F6",
+                "M / P",
+                "u",
+                "F10 / q"
+            ],
+            "warnings": {
+                "F9 / k": "Sends a signal to the selected process; this can terminate it."
+            }
+        },
+        "Ghostty": {
+            "no_warning": [
+                "Ctrl+Shift+C",
+                "Ctrl+Shift+T",
+                "Ctrl+Tab",
+                "Ctrl+Shift+Tab",
+                "Ctrl+Shift+O",
+                "Ctrl+Shift+E",
+                "Ctrl+Shift+Enter",
+                "Ctrl+Enter",
+                "Ctrl+Shift+P",
+                "Ctrl+,",
+                "Ctrl+Shift+,",
+                "Ctrl++ / Ctrl+-",
+                "Ctrl+0"
+            ],
+            "warnings": {
+                "Ctrl+Shift+V": "Pastes clipboard contents into the terminal; inspect it before pressing Enter.",
+                "Ctrl+Shift+W": "Closes the current terminal tab and its foreground session may end."
+            }
+        }
+    }
+}

@@ -1,12 +1,75 @@
 {
-  "Git": "https://git-scm.com/docs/git",
-  "OpenSSH": "https://man.openbsd.org/ssh",
-  "curl": "https://curl.se/docs/manpage.html",
-  "tmux": "https://raw.githubusercontent.com/tmux/tmux/master/tmux.1",
-  "Vim": "https://raw.githubusercontent.com/vim/vim/master/runtime/doc/quickref.txt",
-  "fzf": "https://raw.githubusercontent.com/junegunn/fzf/master/README.md",
-  "ripgrep": "https://raw.githubusercontent.com/BurntSushi/ripgrep/master/GUIDE.md",
-  "fd": "https://raw.githubusercontent.com/sharkdp/fd/master/README.md",
-  "jq": "https://jqlang.org/manual/",
-  "htop": "https://raw.githubusercontent.com/htop-dev/htop/master/htop.1.in"
+  "note": "These are local archive provenance records. Sources may point to moving upstream pages; they are not assertions about the current installed version. Version and source dates are recorded only when stated in the included snapshot.",
+  "sources": {
+    "Git": {
+      "url": "https://git-scm.com/docs/git",
+      "snapshot": "git.txt",
+      "upstream_version": "Not recorded",
+      "source_date": "Not recorded",
+      "local_review_date": "Not recorded"
+    },
+    "SSH": {
+      "url": "https://man.openbsd.org/ssh",
+      "snapshot": "openssh.txt",
+      "upstream_version": "Not recorded",
+      "source_date": "Not recorded",
+      "local_review_date": "Not recorded"
+    },
+    "curl": {
+      "url": "https://curl.se/docs/manpage.html",
+      "snapshot": "curl.txt",
+      "upstream_version": "curl 8.23.0 man page",
+      "source_date": "Not recorded",
+      "local_review_date": "Not recorded"
+    },
+    "tmux": {
+      "url": "https://raw.githubusercontent.com/tmux/tmux/master/tmux.1",
+      "snapshot": "tmux.txt",
+      "upstream_version": "Not recorded; source is tmux.1 revision 1.1181",
+      "source_date": "2026-10-08",
+      "local_review_date": "Not recorded"
+    },
+    "Vim": {
+      "url": "https://raw.githubusercontent.com/vim/vim/master/runtime/doc/quickref.txt",
+      "snapshot": "vim.txt",
+      "upstream_version": "Vim 9.2",
+      "source_date": "2026-05-17 (source says last change)",
+      "local_review_date": "Not recorded"
+    },
+    "fzf": {
+      "url": "https://raw.githubusercontent.com/junegunn/fzf/master/README.md",
+      "snapshot": "fzf.txt",
+      "upstream_version": "Not recorded; moving master snapshot",
+      "source_date": "Not recorded",
+      "local_review_date": "Not recorded"
+    },
+    "ripgrep": {
+      "url": "https://raw.githubusercontent.com/BurntSushi/ripgrep/master/GUIDE.md",
+      "snapshot": "ripgrep.txt",
+      "upstream_version": "Not recorded; moving master snapshot",
+      "source_date": "Not recorded",
+      "local_review_date": "Not recorded"
+    },
+    "fd": {
+      "url": "https://raw.githubusercontent.com/sharkdp/fd/master/README.md",
+      "snapshot": "fd.txt",
+      "upstream_version": "Not recorded; moving master snapshot",
+      "source_date": "Not recorded",
+      "local_review_date": "Not recorded"
+    },
+    "jq": {
+      "url": "https://jqlang.org/manual/",
+      "snapshot": "jq.txt",
+      "upstream_version": "Not recorded; development/manual page snapshot",
+      "source_date": "Not recorded",
+      "local_review_date": "Not recorded"
+    },
+    "htop": {
+      "url": "https://raw.githubusercontent.com/htop-dev/htop/master/htop.1.in",
+      "snapshot": "htop.txt",
+      "upstream_version": "Not recorded; package version placeholder in source",
+      "source_date": "Not recorded",
+      "local_review_date": "Not recorded"
+    }
+  }
 }

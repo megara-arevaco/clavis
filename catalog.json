@@ -43,7 +43,7 @@
     ]
   },
   {
-    "name": "tmux", "kind": "Keys", "source": "https://github.com/tmux/tmux/wiki", "note": "Default prefix: press Ctrl+B, release, then the next key.",
+    "name": "tmux", "kind": "Keys", "source": "https://github.com/tmux/tmux/blob/master/tmux.1", "note": "Default prefix: press Ctrl+B, release, then the next key.",
     "entries": [
       {"key": "Ctrl+B → c", "action": "New window"},
       {"key": "Ctrl+B → n / p", "action": "Next / previous window"},

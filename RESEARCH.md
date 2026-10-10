@@ -6,6 +6,8 @@ There is no comparable, public global usage dataset covering every terminal prog
 
 Official upstream documentation was fetched and consulted while building this catalog. The local research snapshots are development-only; the shipped app embeds reference entries and links, not entire manuals. It performs no runtime network requests and does not inspect shell history.
 
+Source archive details and the evidence-supported version/date fields are in [`research/RESEARCH.md`](research/RESEARCH.md) and [`research/sources.json`](research/sources.json). The shipped UI identifies these as archived references and explicitly says the currently installed tool version has not been checked. It does not query the network or claim that moving upstream pages or local packages match the archive. Versions and source dates remain **Not recorded** unless the included source text itself states them; local review dates are not inferred from file timestamps.
+
 | Tool | Job covered | Primary reference | Important qualification |
 |---|---|---|---|
 | Git | Version control | https://git-scm.com/docs | Commands can modify a repository; placeholders need replacing. |
@@ -27,10 +29,14 @@ The installed Ghostty's `ghostty +list-keybinds --default` output was checked. T
 
 Explicit `keybind` lines in the Ghostty config replace the default reference in the panel. This remains a lightweight parser: includes, reset directives, conditional bindings and the complete effective keymap are not resolved. The Docs tooltip says so.
 
+## Curated risk review
+
+All 94 rows in `catalog.json` and all 15 bundled Ghostty rows were inspected as part of the local catalog review. The snapshot fingerprints and curated high-impact warning coverage are asserted in Rust tests; changing either data file requires explicitly re-reviewing the full snapshot and updating its fingerprint. Exact warnings are attached to the reviewed Git, SSH, curl, Vim, fzf, ripgrep, fd, htop and Ghostty entries that can alter repository or file state, transmit remote data, expose private details, or close/paste terminal content. Placeholder highlighting has a separate generic reminder. This is a conservative, curated warning set, not a command parser or a safety guarantee; personal references may carry their own author-written warning.
+
 ## Product boundaries
 
 - The app displays and copies references; it does not install or execute these tools.
 - No terminal content, shell history or window titles are read to guess the active tool.
 - Tool selection is manual and remembered between launches.
 - Commands and keys have separate labels. Custom bindings may differ from documented defaults.
-- Add another reference by appending an object to `catalog.json`, then rebuild.
+- Add another bundled reference by editing `catalog.json` and re-reviewing the complete catalog snapshot; end users can create/edit local personal entries in the Info screen.

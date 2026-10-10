@@ -1,7 +1,7 @@
 <div align="center">
   <img src="packaging/clavis.svg" width="132" height="132" alt="Clavis logo">
   <h1>Clavis</h1>
-  <p><strong>Your terminal shortcuts and commands — one double Ctrl away.</strong></p>
+  <p><strong>Your terminal shortcuts and commands — one shortcut away.</strong></p>
   <p>
     <img alt="Rust" src="https://img.shields.io/badge/Rust-native-CE7B53?logo=rust&logoColor=white">
     <img alt="GTK" src="https://img.shields.io/badge/GTK-4-78AE62?logo=gtk&logoColor=white">
@@ -11,9 +11,9 @@
 </div>
 
 Clavis is a small desktop companion for remembering terminal shortcuts and everyday
-commands without leaving your workflow. Tap and release **Ctrl twice**, choose a
-tool, and find what you need in a compact two-column reference. Click an entry to
-copy it; Clavis **never executes commands automatically**.
+commands without leaving your workflow. Open Clavis from a compositor shortcut or optionally
+tap and release **Ctrl twice**. Choose a tool and search one reference or all tools in a compact panel. Click a row
+to copy it; Clavis **never executes commands automatically**.
 
 It works locally, without a Clavis account or hosted service. Reference content is
 bundled with the executable; internet access is only needed when you open external
@@ -21,25 +21,29 @@ documentation, download dependencies, or fetch a release.
 
 > [!NOTE]
 > Clavis is under active development. Linux is the supported platform; current
-> executable packages are unsigned development builds. Wayland keyboard detection
-> requires explicit access to your selected keyboard devices.
+> executable packages are unsigned development builds. Optional Wayland double-Ctrl
+> detection requires explicit access to selected keyboards; compositor shortcuts do not.
 
 <p align="center">
-  <img src="docs/screenshots/clavis.png" width="560" alt="Clavis showing Ghostty shortcuts in two columns">
+  <img src="docs/screenshots/clavis.png" width="560" alt="Clavis showing Git command references in two columns">
 </p>
 
 ## What Clavis does
 
-- Opens and hides its reference with two quick, released Ctrl taps.
+- Optionally opens and hides its reference with two quick, released Ctrl taps; a compositor shortcut needs no input-device ACL.
 - Displays Ghostty shortcuts and references for Git, SSH, curl, tmux, Vim, fzf,
   ripgrep, fd, jq and htop.
 - Keeps commands and keyboard shortcuts clearly identified.
-- Searches the selected tool's commands and descriptions.
-- Copies full entries without executing them or modifying your terminal input.
+- Searches the selected tool or all tools; global results identify their tool and type.
+- Saves favorites locally and creates/edits, imports/exports a validated personal reference catalog.
+- Copies full entries without executing them or modifying your terminal input. Placeholder and high-impact warnings appear before copying.
+- Focuses search when opened; Ctrl+F returns focus, Enter copies the first result, and Esc hides the panel.
+- Offers normal/large text and automatically changes to one column when the window is narrow.
 - Remembers your last selected tool between launches.
 - Provides a tray menu to show, hide, choose a tool, or quit.
 - Reads simple explicit Ghostty keybindings or falls back to verified Linux defaults.
 - Supports multiple configured keyboards on Wayland, with reconnection attempts.
+- Offers an Info screen with persistent input diagnostics, safe compositor setup, privacy notes, reference source/version/review metadata and help that does not depend on hover.
 - Offers official documentation links and tool-specific usage qualifications.
 
 The extra tools are a curated developer-oriented selection, **not a measured global
@@ -51,7 +55,7 @@ usage ranking**. Research sources and content boundaries are documented in
 ### To use the Linux application
 
 - A Linux desktop with GTK4 and a D-Bus session.
-- X11, or Wayland with permission to read the keyboards you explicitly select.
+- X11, or Wayland with a compositor shortcut (recommended) or explicitly authorized keyboard access for optional double-Ctrl detection.
 - A StatusNotifier/AppIndicator host for the tray icon. Ubuntu GNOME usually has
   its AppIndicator extension enabled; other desktops may need one installed.
 - For prebuilt executables, an architecture and distribution compatible with the
@@ -84,6 +88,8 @@ sudo apt install cargo rustc build-essential pkg-config \
 ```bash
 clavis --show
 ```
+
+**Recommended on Wayland (no keyboard ACL):** bind `clavis --show` in your compositor's keyboard-shortcut settings. On GNOME, add it under **Settings → Keyboard → View and Customize Shortcuts → Custom Shortcuts** (wording can vary by version). Set the command to `clavis --show` and choose a key combination. The compositor delivers this shortcut without an input-device ACL. Optional double-Ctrl monitoring is independent and continues only if separately configured.
 
 To start silently and wait for double Ctrl:
 
@@ -150,14 +156,46 @@ input paths are opened. Identically named keyboards can be ambiguous; stable dev
 paths are preferable. Newly added keyboards must be configured explicitly. Some
 composite receiver interfaces are named Mouse while exposing keyboard capabilities.
 
-If you prefer not to grant input access, bind `clavis --show` to a compositor shortcut.
+Double Ctrl remains optional. It does require explicit access to selected keyboards; granting an ACL also makes those keystrokes readable by other processes running as your user. Clavis never stores or transmits input.
 
 ### Browse and copy references
 
-Choose a tool, search its reference, and click an entry to copy the complete text.
-Replace placeholders before pasting commands into a shell. Keyboard descriptions
-are not shell commands; some commands can modify repositories or remote services.
-Hover over **Docs** for tool-specific qualifications, then open its upstream manual.
+Choose a tool, search this tool or **All tools**, and click a result to copy the complete text. The search field is focused whenever the panel opens; use **Ctrl+F** to return to it, **Enter** to copy the first matching row, and **Esc** to hide the panel. The Favorites toggle filters to saved references, and each row has a keyboard-accessible star control.
+
+Placeholders are highlighted and curated entries with repository, file, remote-data, process, privacy or terminal-session impact carry an inline warning before copying. Warnings are attached to reviewed entries rather than inferred only from command-name heuristics. The list is conservative and not exhaustive: inspect every command and replace placeholders before running it. The entry-by-entry decisions are recorded in [`research/catalog-risk-review.json`](research/catalog-risk-review.json). Keyboard shortcuts are labeled separately from terminal commands. Open **Info** for input diagnostics, the no-ACL compositor setup, privacy explanations, tool/source/version/review details, text sizing, and import/export actions. Reference versions and review dates that are not maintained are honestly shown as **Not recorded**. The **Docs** link opens the selected tool's upstream manual.
+
+### Personal references
+
+Import/export is local JSON with `schema_version: 1`. The top-level object contains a `references` array. Each tool entry has `name`, `kind` (`Commands` or `Keys`), HTTPS `source`, `note`, `origin`, `version`, `reviewed`, and `entries`; each entry has `key`, `action`, `origin`, `version`, `reviewed` (an ISO date or `Not recorded`), and optional `warning`. Use `Not recorded` rather than guessing an upstream version or review date. Unknown fields, non-HTTPS sources, invalid metadata, unsupported schema versions, duplicates, and oversized catalogs are rejected. Imports are validated fully before they are added; a name collision rejects the import instead of replacing an existing reference. No imported command is executed.
+
+Example entry shape:
+
+```json
+{
+  "schema_version": 1,
+  "references": [{
+    "name": "My tool",
+    "kind": "Commands",
+    "source": "https://example.org/docs",
+    "note": "Personal notes",
+    "origin": "Maintainer notes",
+    "version": "Not recorded",
+    "reviewed": "Not recorded",
+    "entries": [{
+      "key": "my-tool <target>",
+      "action": "Inspect a target",
+      "origin": "Maintainer notes",
+      "version": "Not recorded",
+      "reviewed": "Not recorded",
+      "warning": "Check the target before use."
+    }]
+  }]
+}
+```
+
+The imported collection is stored in `personal-catalog.json` under Clavis' XDG configuration directory; it supplements bundled references. Use **Info → Manage personal references** to create or edit local entries without importing a file. Imports reject collisions instead of overwriting; edits require selecting an existing personal reference. Exports, including an empty catalog, are valid schema-version-1 JSON and refuse to replace an existing destination. Local settings use atomic writes and reject symlink paths. Favorites and text size are stored separately on the same machine. Clavis has no telemetry or hosted account.
+
+Bundled references are identified as archived sources, not as the version currently installed on your computer. Only versions/dates stated in the included source snapshots are shown; unpinned revisions and Clavis review dates remain **Not recorded**. See [`research/RESEARCH.md`](research/RESEARCH.md) for source-by-source evidence.
 
 ## Development
 
@@ -177,19 +215,37 @@ cargo run -- --show
 ```
 
 The unit suite covers double-Ctrl timing, releases, held keys, chord cancellation,
-keyboard capability parsing, multi-device configuration, duplicate event protection,
-reference search, catalog structure, grid positions and tray pixel layout. The tests
-do not require capturing your keyboard or displaying a GTK window.
+keyboard capability parsing, synthetic reconnection, entry-by-entry risk classifications
+for all bundled references, source fingerprints, safe persistence, grid positions and
+tray pixel layout. It never captures keyboard events.
 
-For native visual verification on an interactive desktop, stop other instances first:
+For isolated GTK interaction checks, provide a temporary config directory and private
+D-Bus session:
 
 ```bash
-./target/release/clavis --tool Ghostty --capture /tmp/clavis-ghostty.png
+tmp=$(mktemp -d)
+CLAVIS_TEST_CONFIG_HOME="$tmp/config" dbus-run-session -- env ./target/debug/clavis --test-mode
 ```
 
-This renders only the app's GTK panel to a PNG and exits; it does not capture your
-desktop or other applications. Hardware input, tray hosting and compositor focus
-still need verification in a real desktop session.
+The harness refuses to start unless `CLAVIS_TEST_CONFIG_HOME` is explicitly set to a non-symlink child of the system temporary directory; it then sets `XDG_CONFIG_HOME` itself. This explicit harness disables the input listener, tray and device diagnostics. It drives synthetic global
+search, favorites, language, text scale, Info/refresh, personal editor create/edit,
+import/export and Ctrl+F/Esc paths. It does not inject physical key events, inspect devices/permissions or access a
+keyboard device; it is not a screen-reader, hardware, tray or compositor test.
+
+For app-only GTK rendering, `--capture` also uses a separate test application ID
+and skips the tray, listeners and device diagnostics. Both isolated modes require a
+temporary config path:
+
+```bash
+tmp=$(mktemp -d)
+CLAVIS_TEST_CONFIG_HOME="$tmp/config" dbus-run-session -- env \
+  ./target/debug/clavis --tool Git --capture /tmp/clavis-git.png --width 430
+```
+
+The PNG contains only Clavis, not the desktop or other applications. Source captures
+for English/Spanish and normal/large text are in `docs/screenshots/validation/`.
+Hardware input, screen-reader behavior, tray hosting and compositor focus still need
+separate verification in a real desktop session.
 
 ## Building Linux executables
 
@@ -301,11 +357,14 @@ Personal settings live under `$XDG_CONFIG_HOME/clavis` (default `~/.config/clavi
 
 - `keyboards`: selected input paths and expected device names.
 - `last-tool`: your last selected reference.
+- `personal-catalog.json`: validated personal references, kept alongside bundled content.
+- `favorites.json` and `text-size`: local UI preferences.
 
 Ghostty's explicit config bindings are read from `$XDG_CONFIG_HOME/ghostty/config`.
 This is a lightweight reference parser, not a full effective-keymap resolver: includes,
-resets and conditional bindings are not resolved. The other references are bundled
-in `catalog.json`.
+resets and conditional bindings are not resolved. The other bundled references are in
+`catalog.json`; the UI exposes their documentation source, upstream version and review
+date, using **Not recorded** where the repository has not verified that metadata.
 
 Clavis does not inspect shell history, terminal content or foreground window titles.
 It has no telemetry and does not save keystrokes. Device ACLs are managed by the

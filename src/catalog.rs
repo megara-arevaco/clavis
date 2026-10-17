@@ -281,17 +281,37 @@ fn write_atomic(path: &Path, contents: &[u8], replace: bool) -> Result<(), Strin
             if let Ok(metadata) = fs::symlink_metadata(path) {
                 if !metadata.is_file() { return Err("Refusing to replace a non-regular file.".into()); }
             }
-            fs::rename(&temp, path).map_err(|error| format!("Cannot install file: {error}"))
+            #[cfg(windows)]
+            { move_windows_file(&temp, path, true).map_err(|error| format!("Cannot install file: {error}")) }
+            #[cfg(not(windows))]
+            { fs::rename(&temp, path).map_err(|error| format!("Cannot install file: {error}")) }
         })
     } else {
+        #[cfg(windows)]
+        { move_windows_file(&temp, path, false).map_err(|error| format!("Cannot create file without replacing an existing destination: {error}")) }
+        #[cfg(not(windows))]
+        {
         fs::hard_link(&temp, path)
             .map_err(|error| format!("Cannot create file without replacing an existing destination: {error}"))
             .and_then(|()| fs::remove_file(&temp).map_err(|error| format!("Cannot remove temporary file: {error}")))
+        }
     };
     if result.is_err() { let _ = fs::remove_file(&temp); }
     result?;
     if let Ok(directory) = fs::File::open(parent) { let _ = directory.sync_all(); }
     Ok(())
+}
+
+#[cfg(windows)]
+fn move_windows_file(source: &Path, destination: &Path, replace: bool) -> std::io::Result<()> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::{MoveFileExW, MOVEFILE_REPLACE_EXISTING, MOVEFILE_WRITE_THROUGH};
+
+    let source: Vec<u16> = source.as_os_str().encode_wide().chain(Some(0)).collect();
+    let destination: Vec<u16> = destination.as_os_str().encode_wide().chain(Some(0)).collect();
+    let flags = MOVEFILE_WRITE_THROUGH | if replace { MOVEFILE_REPLACE_EXISTING } else { 0 };
+    let result = unsafe { MoveFileExW(source.as_ptr(), destination.as_ptr(), flags) };
+    if result == 0 { Err(std::io::Error::last_os_error()) } else { Ok(()) }
 }
 
 fn create_temporary(path: &Path, contents: &[u8]) -> Result<(PathBuf, PathBuf, fs::File), String> {

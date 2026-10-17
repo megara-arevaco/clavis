@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 ROOT_DIR="$PWD"
 APP=clavis
-cargo test --locked
+if [[ "${CLAVIS_SKIP_TESTS:-0}" != "1" ]]; then cargo test --locked; fi
 cargo build --release --locked
 VERSION="$(target/release/$APP --version | awk '{print $2}')"
 ARCH="$(dpkg --print-architecture)"
@@ -16,9 +16,9 @@ mkdir -p "$ARCHIVE/packaging" "$ARCHIVE/scripts" "$ARCHIVE/docs/screenshots"
 install -m 0755 "target/release/$APP" "$ARCHIVE/$APP"
 install -m 0755 install.sh uninstall.sh enable-keyboard.sh "$ARCHIVE/"
 install -m 0644 README.md RESEARCH.md "$ARCHIVE/"
-install -m 0644 packaging/* "$ARCHIVE/packaging/"
+find packaging -maxdepth 1 -type f -exec install -m 0644 {} "$ARCHIVE/packaging/" \;
 install -m 0755 scripts/render-icon.sh "$ARCHIVE/scripts/"
-install -m 0644 docs/screenshots/* "$ARCHIVE/docs/screenshots/"
+find docs/screenshots -maxdepth 1 -type f -exec install -m 0644 {} "$ARCHIVE/docs/screenshots/" \;
 if [[ -f LICENSE ]]; then install -m 0644 LICENSE "$ARCHIVE/"; fi
 tar -C "$WORK" -czf "dist/$NAME.tar.gz" "$NAME"
 
@@ -39,7 +39,7 @@ awk '/^Exec=/{print "Exec=/usr/bin/clavis"; next} {print}' \
   "packaging/$APP.desktop" > "$STAGE/etc/xdg/autostart/$APP.desktop"
 install -m 0644 README.md RESEARCH.md "$STAGE/usr/share/doc/$APP/"
 install -m 0644 "packaging/$APP.svg" "$STAGE/usr/share/doc/$APP/packaging/"
-install -m 0644 docs/screenshots/* "$STAGE/usr/share/doc/$APP/docs/screenshots/"
+find docs/screenshots -maxdepth 1 -type f -exec install -m 0644 {} "$STAGE/usr/share/doc/$APP/docs/screenshots/" \;
 if [[ -f LICENSE ]]; then install -m 0644 LICENSE "$STAGE/usr/share/doc/$APP/copyright"; fi
 cat > "$WORK/debian/control" <<EOF
 Source: $APP

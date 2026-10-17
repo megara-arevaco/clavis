@@ -96,9 +96,11 @@ pub fn build(app: &gtk::Application, tools: Rc<RefCell<Vec<Tool>>>, test_mode: b
     let diagnostic = gtk::Label::new(None);
     diagnostic.set_xalign(0.0); diagnostic.set_yalign(0.0); diagnostic.set_wrap(true);
     diagnostic.set_selectable(true); diagnostic.add_css_class("help-copy");
-    let privacy = gtk::Label::new(Some(initial_language.text("privacyHelp")));
+    let privacy_key = if cfg!(windows) { "windowsPrivacyHelp" } else { "privacyHelp" };
+    let privacy = gtk::Label::new(Some(initial_language.text(privacy_key)));
     privacy.set_xalign(0.0); privacy.set_wrap(true); privacy.add_css_class("muted");
-    let safe_shortcut = gtk::Label::new(Some(initial_language.text("safeShortcut")));
+    let safe_shortcut_key = if cfg!(windows) { "windowsSafeShortcut" } else { "safeShortcut" };
+    let safe_shortcut = gtk::Label::new(Some(initial_language.text(safe_shortcut_key)));
     safe_shortcut.set_xalign(0.0); safe_shortcut.set_wrap(true); safe_shortcut.add_css_class("help-copy");
     let source_info = gtk::Label::new(None);
     source_info.set_xalign(0.0); source_info.set_yalign(0.0); source_info.set_wrap(true);
@@ -123,7 +125,8 @@ pub fn build(app: &gtk::Application, tools: Rc<RefCell<Vec<Tool>>>, test_mode: b
     dialog_body.set_margin_top(14); dialog_body.set_margin_bottom(12);
     dialog_body.set_margin_start(14); dialog_body.set_margin_end(14);
     let reading = gtk::Box::new(gtk::Orientation::Vertical, 10);
-    let status_title = gtk::Label::new(Some(initial_language.text("statusLabel")));
+    let status_title_key = if cfg!(windows) { "windowsStatusLabel" } else { "statusLabel" };
+    let status_title = gtk::Label::new(Some(initial_language.text(status_title_key)));
     status_title.set_xalign(0.0); status_title.add_css_class("dialog-title");
     reading.append(&status_title); reading.append(&diagnostic);
     let refresh_status = gtk::Button::with_label(initial_language.text("refreshStatus"));
@@ -453,10 +456,10 @@ pub fn build(app: &gtk::Application, tools: Rc<RefCell<Vec<Tool>>>, test_mode: b
         if let Some(docs) = weak_docs.upgrade() { docs.set_label(selected_language.text("docs")); }
         if let Some(info) = weak_info.upgrade() { info.set_label(selected_language.text("info")); info.set_tooltip_text(Some(selected_language.text("inputHelp"))); }
         if let Some(hide) = weak_hide.upgrade() { hide.set_tooltip_text(Some(selected_language.text("hide"))); }
-        if let Some(label) = weak_status_title.upgrade() { label.set_text(selected_language.text("statusLabel")); }
+        if let Some(label) = weak_status_title.upgrade() { label.set_text(selected_language.text(status_title_key)); }
         if let Some(button) = weak_refresh.upgrade() { button.set_label(selected_language.text("refreshStatus")); }
-        if let Some(label) = weak_privacy.upgrade() { label.set_text(selected_language.text("privacyHelp")); }
-        if let Some(label) = weak_safe.upgrade() { label.set_text(selected_language.text("safeShortcut")); }
+        if let Some(label) = weak_privacy.upgrade() { label.set_text(selected_language.text(privacy_key)); }
+        if let Some(label) = weak_safe.upgrade() { label.set_text(selected_language.text(safe_shortcut_key)); }
         if let Some(label) = weak_scale_label.upgrade() { label.set_text(selected_language.text("textScale")); }
         if let Some(button) = weak_manage.upgrade() { button.set_label(selected_language.text("managePersonal")); }
         if let Some(button) = weak_import.upgrade() { button.set_label(selected_language.text("importPersonal")); }

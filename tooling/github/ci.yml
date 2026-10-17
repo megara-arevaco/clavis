@@ -32,3 +32,35 @@ jobs:
             dist/*.tar.gz
             dist/SHA256SUMS
           if-no-files-found: error
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable-x86_64-pc-windows-gnu
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gtk4
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-adwaita-icon-theme
+      - uses: Swatinem/rust-cache@v2
+      - name: Build the Windows application
+        run: cargo build --release --locked --target x86_64-pc-windows-gnu
+        shell: msys2 {0}
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+      - name: Package Windows installer
+        run: ./scripts/package-windows.ps1
+        env:
+          MSYS2_PREFIX: C:\msys64\ucrt64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clavis-windows-x64
+          path: dist/windows/Clavis-*-setup-x64.exe
+          if-no-files-found: error

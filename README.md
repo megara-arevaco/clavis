@@ -5,7 +5,7 @@
   <p>
     <img alt="Rust" src="https://img.shields.io/badge/Rust-native-CE7B53?logo=rust&logoColor=white">
     <img alt="GTK" src="https://img.shields.io/badge/GTK-4-78AE62?logo=gtk&logoColor=white">
-    <img alt="Platform" src="https://img.shields.io/badge/Platform-Linux-A8F5DF?logo=linux&logoColor=17201E">
+    <img alt="Platform" src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-A8F5DF?logo=linux&logoColor=17201E">
     <img alt="License" src="https://img.shields.io/badge/License-MIT-A8F5DF">
   </p>
 </div>
@@ -20,9 +20,9 @@ bundled with the executable; internet access is only needed when you open extern
 documentation, download dependencies, or fetch a release.
 
 > [!NOTE]
-> Clavis is under active development. Linux is the supported platform; current
-> executable packages are unsigned development builds. Optional Wayland double-Ctrl
-> detection requires explicit access to selected keyboards; compositor shortcuts do not.
+> Clavis is under active development. Linux and Windows builds are unsigned development
+> builds. Optional Wayland double-Ctrl detection requires explicit access to selected
+> keyboards; Windows uses a system-wide keyboard hook while Clavis is running.
 
 <p align="center">
   <img src="docs/screenshots/clavis.png" width="560" alt="Clavis showing Git command references in two columns">
@@ -41,7 +41,7 @@ documentation, download dependencies, or fetch a release.
 - Offers normal/large text and automatically changes to one column when the window is narrow.
 - Remembers your last selected tool between launches.
 - Provides a tray menu to show, hide, choose a tool, or quit.
-- Reads simple explicit Ghostty keybindings or falls back to verified Linux defaults.
+- Reads simple explicit Ghostty keybindings or falls back to bundled defaults.
 - Supports multiple configured keyboards on Wayland, with reconnection attempts.
 - Offers an Info screen with persistent input diagnostics, safe compositor setup, privacy notes, reference source/version/review metadata and help that does not depend on hover.
 - Offers official documentation links and tool-specific usage qualifications.
@@ -67,12 +67,22 @@ The binary archive still requires system GTK4, X11/XTest and D-Bus libraries. Ne
 format requires Rust, Python or Node.js to run. The referenced terminal tools do not
 need to be installed just to browse their entries.
 
+### To use the Windows application
+
+- Windows 10 or later, x64.
+- The setup executable includes GTK runtime libraries and the system tray integration.
+- The global Ctrl listener runs only while Clavis is open. It checks Ctrl press/release
+  state for double Ctrl and does not record or transmit ordinary keystrokes.
+- The installer offers an optional login-startup shortcut, unchecked by default.
+
 ### To develop Clavis
 
 - A recent [Rust toolchain](https://rustup.rs/) and Cargo.
 - Git, a C toolchain, pkg-config and native development libraries.
 - `dpkg-dev` to build Debian packages.
 - `librsvg2-bin` and `ffmpeg` only when regenerating the icon.
+- On Windows, Rust's GNU x64 toolchain, GTK4 from MSYS2 UCRT64, and Inno Setup 6 to build
+  the native setup executable.
 
 On Ubuntu/Debian:
 
@@ -80,6 +90,23 @@ On Ubuntu/Debian:
 sudo apt install cargo rustc build-essential pkg-config \
   libgtk-4-dev libx11-dev libxi-dev libxtst-dev libdbus-1-dev dpkg-dev
 ```
+
+On Windows, install the MSYS2 UCRT64 packages `mingw-w64-ucrt-x86_64-gtk4`,
+`mingw-w64-ucrt-x86_64-toolchain`, `mingw-w64-ucrt-x86_64-pkgconf`, and
+`mingw-w64-ucrt-x86_64-adwaita-icon-theme`, then install Rust's
+`stable-x86_64-pc-windows-gnu` toolchain and Inno Setup 6. Build with:
+
+```powershell
+$env:MSYS2_PREFIX = 'C:\msys64\ucrt64'
+$env:PATH = "$env:MSYS2_PREFIX\bin;$env:PATH"
+$env:PKG_CONFIG_PATH = "$env:MSYS2_PREFIX\lib\pkgconfig"
+rustup toolchain install stable-x86_64-pc-windows-gnu
+cargo +stable-x86_64-pc-windows-gnu build --release --locked --target x86_64-pc-windows-gnu
+./scripts/package-windows.ps1
+```
+
+The Windows setup executable bundles GTK DLLs, schemas, icons, theme, and image
+loaders. The Linux `.deb` is the native installer for Debian and Ubuntu.
 
 ## Using Clavis
 
@@ -258,22 +285,22 @@ Build a tested release binary, Debian installer and executable archive:
 The current version produces:
 
 ```text
-dist/clavis_0.4.3_amd64.deb
-dist/clavis-0.4.3-linux-amd64.tar.gz
+dist/clavis_0.5.0_amd64.deb
+dist/clavis-0.5.0-linux-amd64.tar.gz
 dist/SHA256SUMS
 ```
 
 Install the Debian package on a compatible Ubuntu/Debian system:
 
 ```bash
-sudo apt install ./dist/clavis_0.4.3_amd64.deb
+sudo apt install ./dist/clavis_0.5.0_amd64.deb
 ```
 
 Alternatively extract the archive and run its installer:
 
 ```bash
-tar -xzf dist/clavis-0.4.3-linux-amd64.tar.gz
-cd clavis-0.4.3-linux-amd64
+tar -xzf dist/clavis-0.5.0-linux-amd64.tar.gz
+cd clavis-0.5.0-linux-amd64
 ./install.sh
 # Or: ./install.sh --user
 ```
@@ -282,31 +309,34 @@ The archive includes the compiled executable, desktop icon, installer, uninstall
 and keyboard setup script. Installing it does not invoke Cargo. Building from source
 with `./install.sh` does require Cargo and the native build dependencies.
 
-Installers add an application-menu entry and silent login autostart, but **never grant
-keyboard permissions automatically**. Personal settings and ACLs are retained on
-uninstall. Remove a Debian installation with `sudo apt purge clavis`, or use the
-archive's `uninstall.sh` (`--user` for a user installation). Stop running instances
-separately.
+The Debian installer adds an application-menu entry and silent login autostart. The
+Windows installer adds a Start menu shortcut and offers optional login startup,
+unchecked by default. Installers **never grant keyboard permissions automatically**.
+Personal settings and Linux ACLs are retained on uninstall. Remove a Debian
+installation with `sudo apt purge clavis`, or use the archive's `uninstall.sh`
+(`--user` for a user installation). Stop running instances separately.
 
 ## Project structure
 
 ```text
 clavis/
 ├── src/                   Rust application and desktop integration
-│   ├── main.rs             Lifecycle, X11 input and event dispatch
-│   ├── input.rs            Wayland/evdev, keyboard selection and double Ctrl
+│   ├── main.rs             Lifecycle and event dispatch
+│   ├── input.rs            Linux Wayland/evdev and double Ctrl
+│   ├── input_windows.rs    Windows global keyboard hook
 │   ├── ui.rs               GTK reference grid, search, copy and captures
-│   ├── tray.rs             StatusNotifier icon and menu
+│   ├── tray.rs             Linux StatusNotifier icon and menu
+│   ├── tray_windows.rs     Windows tray icon and menu
 │   └── catalog.rs          Reference content and remembered selection
-├── packaging/              Icon source/exports and desktop entry
-├── scripts/                Icon regeneration
+├── packaging/              Icon assets, desktop entry and Windows installer recipe
+├── scripts/                Icon regeneration and Windows packaging
 ├── tooling/github/         Optional CI and release workflow templates
 ├── docs/screenshots/       Application-only README screenshot
 ├── catalog.json            Extra terminal-tool references
 ├── shortcuts.json          Bundled Ghostty Linux reference
 ├── install.sh              Source and executable-archive installer
 ├── enable-keyboard.sh      Explicit keyboard permission setup
-└── build-dist.sh            Release binary, .deb, archive and checksums
+└── build-dist.sh            Linux binary, .deb, archive and checksums
 ```
 
 ## Publishing a release
@@ -315,8 +345,8 @@ Update the version in `Cargo.toml`, refresh `Cargo.lock`, update the README arti
 names, run the validation commands, and commit the change. Create a matching tag:
 
 ```bash
-git tag -a v0.4.3 -m "Clavis 0.4.3"
-git push origin v0.4.3
+git tag -a v0.5.0 -m "Clavis 0.5.0"
+git push origin v0.5.0
 ```
 
 Optional workflow templates are included under `tooling/github/`. They are **not
@@ -334,18 +364,21 @@ git push
 ```
 
 When enabled, the release workflow verifies the tag against the package version,
-builds on an Ubuntu runner, runs the unit suite, generates the Debian installer and
-binary archive, and publishes them with `SHA256SUMS` and generated release notes.
-The CI template builds and uploads artifacts without publishing a release. Neither
-workflow grants keyboard access or verifies physical keyboards.
+builds the Linux `.deb` and binary archive, creates the Windows setup executable on a
+Windows runner, and publishes all installers with `SHA256SUMS` and generated release
+notes. The CI template builds and uploads artifacts without publishing a release.
+Neither workflow grants keyboard access or verifies physical keyboards.
 
-Without these workflows enabled, build and publish a release manually:
+Without these workflows enabled, build the Windows setup executable on a Windows
+machine with the commands above and place it under `dist/windows/` in the release
+checkout. Then build and publish the release manually:
 
 ```bash
 ./build-dist.sh
-gh release create v0.4.3 dist/clavis_0.4.3_amd64.deb \
-  dist/clavis-0.4.3-linux-amd64.tar.gz dist/SHA256SUMS \
-  --verify-tag --generate-notes --title "Clavis 0.4.3"
+sha256sum dist/windows/*.exe >> dist/SHA256SUMS
+gh release create v0.5.0 dist/clavis_0.5.0_amd64.deb \
+  dist/clavis-0.5.0-linux-amd64.tar.gz dist/SHA256SUMS dist/windows/*.exe \
+  --verify-tag --generate-notes --title "Clavis 0.5.0"
 ```
 
 Builds are unsigned. The `dist/` directory is intentionally ignored: executables
@@ -353,14 +386,16 @@ belong in GitHub Releases, not in source control.
 
 ## Data locations and privacy
 
-Personal settings live under `$XDG_CONFIG_HOME/clavis` (default `~/.config/clavis`):
+On Linux, personal settings live under `$XDG_CONFIG_HOME/clavis` (default
+`~/.config/clavis`). On Windows, they live under `%APPDATA%\Clavis`:
 
 - `keyboards`: selected input paths and expected device names.
 - `last-tool`: your last selected reference.
 - `personal-catalog.json`: validated personal references, kept alongside bundled content.
 - `favorites.json` and `text-size`: local UI preferences.
 
-Ghostty's explicit config bindings are read from `$XDG_CONFIG_HOME/ghostty/config`.
+Ghostty's explicit config bindings are read from `$XDG_CONFIG_HOME/ghostty/config` on
+Linux and `%APPDATA%\ghostty\config` on Windows.
 This is a lightweight reference parser, not a full effective-keymap resolver: includes,
 resets and conditional bindings are not resolved. The other bundled references are in
 `catalog.json`; the UI exposes their documentation source, upstream version and review

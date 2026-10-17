@@ -2,10 +2,18 @@ use gtk::{glib, prelude::*};
 use serde::Deserialize;
 use std::{cell::{Cell, RefCell}, collections::HashMap, env, fs, path::PathBuf, rc::Rc, sync::mpsc, thread, time::{Duration, Instant}};
 
+#[cfg(target_os = "linux")]
+mod input;
+#[cfg(windows)]
+#[path = "input_windows.rs"]
 mod input;
 mod catalog;
 mod locale;
 mod ui;
+#[cfg(target_os = "linux")]
+mod tray;
+#[cfg(windows)]
+#[path = "tray_windows.rs"]
 mod tray;
 
 enum OverlayEvent { Toggle, DoubleTap, Show, Hide, SelectTool(u32), Quit, Error(String), InputNotice(String) }
@@ -28,9 +36,16 @@ struct Shortcut {
 fn unrecorded() -> String { "Not recorded".into() }
 
 fn shortcuts() -> Vec<Shortcut> {
+    #[cfg(target_os = "linux")]
     let base = env::var_os("XDG_CONFIG_HOME").map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(env::var_os("HOME").unwrap_or_default()).join(".config"));
+    #[cfg(windows)]
+    let base = env::var_os("CLAVIS_TEST_CONFIG_HOME").or_else(|| env::var_os("APPDATA"))
+        .map(PathBuf::from).unwrap_or_else(|| PathBuf::from(env::var_os("USERPROFILE").unwrap_or_default()).join("AppData/Roaming"));
     let mut entries = Vec::new();
+    #[cfg(target_os = "linux")]
+    let config_path = base.join("ghostty/config");
+    #[cfg(windows)]
     let config_path = base.join("ghostty/config");
     if let Ok(config) = fs::read_to_string(&config_path) {
         for line in config.lines() {
@@ -55,7 +70,10 @@ fn shortcuts() -> Vec<Shortcut> {
     if entries.is_empty() {
         let mut defaults: Vec<Shortcut> = serde_json::from_str(include_str!("../shortcuts.json")).expect("valid bundled shortcuts");
         for entry in &mut defaults {
-            entry.origin = "Ghostty Linux defaults".into();
+            #[cfg(target_os = "linux")]
+            { entry.origin = "Ghostty Linux defaults".into(); }
+            #[cfg(windows)]
+            { entry.origin = "Bundled Ghostty defaults".into(); }
             entry.version = "Not recorded".into();
             entry.reviewed = "Not recorded".into();
         }
@@ -63,6 +81,7 @@ fn shortcuts() -> Vec<Shortcut> {
     } else { entries }
 }
 
+#[cfg(target_os = "linux")]
 fn listener(sender: mpsc::Sender<OverlayEvent>, delay: Duration) {
     thread::spawn(move || {
         let mut detector = input::DoubleControl::default();
@@ -123,19 +142,30 @@ fn prepare_test_config() -> Result<(), String> {
 }
 
 fn main() -> glib::ExitCode {
+    #[cfg(windows)]
+    configure_windows_runtime();
     let args: Vec<String> = env::args().collect();
     if args.iter().any(|arg| arg == "--version") {
         println!("clavis {}", env!("CARGO_PKG_VERSION")); return glib::ExitCode::SUCCESS;
     }
     if args.iter().any(|arg| arg == "--list-keyboards") {
+        #[cfg(target_os = "linux")]
         for keyboard in input::candidates() {
             println!("{}\t{}", keyboard.path.display(), keyboard.name.as_deref().unwrap_or("Unnamed keyboard"));
         }
+        #[cfg(windows)]
+        println!("Windows uses the system-wide keyboard hook; no per-device setup is needed.");
         return glib::ExitCode::SUCCESS;
     }
     if args.iter().any(|arg| arg == "--diagnose") {
+        #[cfg(target_os = "linux")]
         println!("Tap and release Ctrl twice within 380 ms. Ctrl+C to exit. All configured keyboards are monitored.");
+        #[cfg(windows)]
+        println!("Tap and release Ctrl twice within 380 ms. Ctrl+C to exit. Clavis observes only the Ctrl tap state.");
+        #[cfg(target_os = "linux")]
         println!("Only connection notices and double-tap detections are printed; other keystrokes are not logged.");
+        #[cfg(windows)]
+        println!("Only double-tap detections are printed; other keystrokes are not logged.");
         let (tx, rx) = mpsc::channel();
         if let Err(error) = input::start(tx, Duration::from_millis(380)) { eprintln!("{error}"); return glib::ExitCode::FAILURE; }
         for event in rx {
@@ -149,6 +179,8 @@ fn main() -> glib::ExitCode {
         return glib::ExitCode::FAILURE;
     }
     if args.iter().any(|arg| arg == "--check-input") {
+        #[cfg(target_os = "linux")]
+        {
         let keyboards = match input::configured() {
             Ok(keyboards) => keyboards,
             Err(error) => { eprintln!("{error}"); return glib::ExitCode::FAILURE; }
@@ -162,6 +194,12 @@ fn main() -> glib::ExitCode {
         }
         println!("{readable}/{} configured keyboards readable. Use --list-keyboards to find other devices.", keyboards.len());
         return if readable == keyboards.len() { glib::ExitCode::SUCCESS } else { glib::ExitCode::FAILURE };
+        }
+        #[cfg(windows)]
+        {
+            println!("Windows uses a system-wide keyboard hook; keyboard-device ACLs are not used.");
+            return glib::ExitCode::SUCCESS;
+        }
     }
     let capture = args.windows(2).find(|pair| pair[0] == "--capture").map(|pair| pair[1].clone());
     let test_mode = args.iter().any(|arg| arg == "--test-mode");
@@ -185,8 +223,11 @@ fn main() -> glib::ExitCode {
             if let (Some(window), Some(search)) = (app.windows().first(), search_slot.borrow().as_ref()) { ui::present(window, search); }
             return;
         }
-        let use_evdev = env::var("XDG_SESSION_TYPE").as_deref() == Ok("wayland")
+        #[cfg(target_os = "linux")]
+        let use_platform_listener = env::var("XDG_SESSION_TYPE").as_deref() == Ok("wayland")
             || env::var_os("CLAVIS_KEYBOARD").or_else(|| env::var_os("GHOSTTY_EE_KEYBOARD")).is_some();
+        #[cfg(windows)]
+        let use_platform_listener = true;
         let hold = app.hold();
         app.connect_shutdown(move |_| { let _ = &hold; });
         let tools = Rc::new(RefCell::new(catalog::tools()));
@@ -210,13 +251,13 @@ fn main() -> glib::ExitCode {
             app.add_action(&action);
         }
         let initial_diagnostic = if isolated_mode { input::isolated_diagnostic(language.get())
-        } else if use_evdev { input::diagnostic_summary(language.get()) } else {
+        } else if use_platform_listener { input::diagnostic_summary(language.get()) } else {
             "X11 global shortcut listener is active. On Wayland, bind `clavis --show` in your compositor to avoid keyboard-device permissions.".to_string()
         };
         diagnostic.set_text(&initial_diagnostic);
         diagnostic.set_tooltip_text(Some(&initial_diagnostic));
         if capture.is_none() && !test_mode {
-            if use_evdev {
+            if use_platform_listener {
                 if let Err(error) = input::start(tx.clone(), Duration::from_secs_f64(delay)) {
                     let _ = tx.send(OverlayEvent::Error(error));
                 }
@@ -266,6 +307,32 @@ fn main() -> glib::ExitCode {
     });
     let result = app.run_with_args(&["clavis"]);
     if test_mode && !ui::gtk_test_succeeded() { glib::ExitCode::FAILURE } else { result }
+}
+
+#[cfg(windows)]
+fn configure_windows_runtime() {
+    let Ok(executable) = env::current_exe() else { return; };
+    let Some(root) = executable.parent() else { return; };
+    env::set_var("GTK_DATA_PREFIX", root);
+    env::set_var("GTK_EXE_PREFIX", root);
+    env::set_var("GSETTINGS_SCHEMA_DIR", root.join("share/glib-2.0/schemas"));
+    env::set_var("XDG_DATA_DIRS", root.join("share"));
+
+    let module_dir = root.join("lib/gdk-pixbuf-2.0/2.10.0/loaders");
+    let template = root.join("share/clavis/gdk-pixbuf-loaders.cache.template");
+    if let Ok(template) = fs::read_to_string(template) {
+        let escaped_root = root.to_string_lossy().replace('\\', "\\\\");
+        let cache = template.replace("@CLAVIS_PREFIX@", &escaped_root);
+        if let Some(local) = env::var_os("LOCALAPPDATA").map(PathBuf::from) {
+            let cache_path = local.join("Clavis/cache/loaders.cache");
+            if let Some(parent) = cache_path.parent() {
+                if fs::create_dir_all(parent).is_ok() && fs::write(&cache_path, cache).is_ok() {
+                    env::set_var("GDK_PIXBUF_MODULE_FILE", cache_path);
+                    env::set_var("GDK_PIXBUF_MODULEDIR", module_dir);
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]

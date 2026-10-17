@@ -8,7 +8,45 @@ permissions:
   contents: read
 
 jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable-x86_64-pc-windows-gnu
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gtk4
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-adwaita-icon-theme
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify package version matches tag
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path Cargo.toml -Pattern '^version = "([^"]+)"').Matches[0].Groups[1].Value
+          if ($env:GITHUB_REF_NAME -ne "v$version") { throw "Tag $env:GITHUB_REF_NAME does not match v$version" }
+      - name: Build the Windows application
+        run: cargo build --release --locked --target x86_64-pc-windows-gnu
+        shell: msys2 {0}
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+      - name: Package Windows installer
+        run: ./scripts/package-windows.ps1
+        env:
+          MSYS2_PREFIX: C:\msys64\ucrt64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clavis-windows-x64
+          path: dist/windows/Clavis-*-setup-x64.exe
+          if-no-files-found: error
+
   release:
+    needs: windows
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -26,9 +64,15 @@ jobs:
           sudo apt-get install -y build-essential pkg-config libgtk-4-dev libx11-dev libxi-dev libxtst-dev libdbus-1-dev dpkg-dev
       - name: Test and build distribution
         run: ./build-dist.sh
+      - uses: actions/download-artifact@v4
+        with:
+          name: clavis-windows-x64
+          path: dist/windows
       - name: Publish unsigned executables and checksums
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          sha256sum dist/windows/*.exe >> dist/SHA256SUMS
           gh release create "$GITHUB_REF_NAME" dist/*.deb dist/*.tar.gz dist/SHA256SUMS \
+            dist/windows/*.exe \
             --verify-tag --generate-notes --title "Clavis $GITHUB_REF_NAME"
